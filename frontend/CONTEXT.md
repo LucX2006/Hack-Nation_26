@@ -2,31 +2,31 @@
 
 ## 1. Architecture & Core Logic
 *   **Tech Stack:** Next.js 16 (App Router), React 19, TypeScript, and Tailwind CSS 4.
-*   **State Management:** Centralized orchestration in `page.tsx` managing transitions between Landing and Workspace views.
-*   **Data Integration:** Real-time connection to Python FastAPI backend (`/api/analyze`).
-*   **Data Transformer:** Custom logic in `Home` component that maps raw Databricks JSON results to the internal UI structure, including intelligent city-to-coordinate mapping (e.g., Mumbai, Delhi).
+*   **State Management:** Centralized orchestration in `page.tsx`.
+*   **Data Transformer:** Advanced mapping logic that handles:
+    *   `query_reasoning` extraction (reasoning steps, constraints).
+    *   `trust_score` calculation from penalties.
+    *   Intelligent city-to-coordinate mapping and Jitter for overlapping pins.
+    *   Extraction of `lat/lon` from API vs. fallback systems.
 
-## 2. State 1: Landing View (ChatGPT-Style)
-*   **Controlled Input:** The search bar is now a controlled component; selecting a suggestion populates the bar before submitting.
-*   **Loading State:** Input and buttons are disabled and visually dimmed (`opacity-60`) during analysis to prevent duplicate requests.
-*   **Interactive Design:** Clean, centered entry point with NGO-specific example prompts.
+## 2. State 1: Landing View
+*   **Controlled Search:** Suggestions now populate the search bar before submitting.
+*   **Interactive Testing:** Temporary "Heatmap Test" button to bypass API for design validation.
+*   **Loading UX:** Disabled inputs and dimmed UI during active analysis.
 
-## 3. State 2: Analysis Workspace (Dashboard)
-*   **3-Zone Layout:** Map (Left), Results & Reasoning (Right Sidebar), Follow-up (Sticky Bottom).
-*   **Result Cards:** 
-    *   **Expandable Reasoning:** Each facility card has an individual "Show reasoning" toggle that reveals specific logic from the AI judge.
-    *   **Interactive Cards:** Highlighting via blue border, rings, and shadows on hover.
-*   **Sticky Refinement:** Suggested follow-up questions and input field are fixed at the bottom, remaining visible even when scrolling through long result lists.
-*   **Loading Overlay:** A "Recalculating" backdrop appears when submitting follow-up questions, providing seamless feedback without leaving the workspace.
+## 3. State 2: Analysis Workspace
+*   **AI Transparency (New):** "AI Query Analysis" section displaying the logical steps and structured constraints derived from the user's prompt.
+*   **Trust Integration:** Facility cards show a "Trust Score" badge (shield icon) based on AI verification.
+*   **Expandable Reasoning:** Specific logic per facility is available via individual toggles.
+*   **Sticky Interaction:** Suggested follow-ups and prompt input are fixed at the bottom for accessibility.
 
-## 4. Mapping Module (Leaflet Integration)
-*   **Auto-Zoom (fitBounds):** The map automatically calculates the optimal zoom level and center point to fit all markers in the current result set.
-*   **Bidirectional Hover Sync:** 
-    *   Hovering over a sidebar card enlarges the map pin (1.4x scale) and increases its Z-index.
-    *   Hovering over a map pin/region highlights the corresponding card in the sidebar.
-*   **Safety & Constraints:** `minZoom` set to 3, `maxBounds` locked to world coordinates, and `noWrap` enabled to prevent world-repetition.
-*   **Jitter Logic:** Markers in the same city are slightly offset to ensure they remain individually selectable.
+## 4. Mapping Module (Leaflet)
+*   **State-Level Heatmap:** High-detail India borders via GeoJSON (`india-states.geojson`).
+*   **Dynamic Styling:** Thematic red color scale based on `risk_score` (0.0 - 1.0).
+*   **Clean Design:** Transparent base states and removed hard outlines for a seamless look.
+*   **Auto-Navigation:** Automatically pans/zooms to fit all current results (fitBounds).
+*   **Bidirectional Sync:** Hover synchronization between map elements and sidebar cards.
 
 ## Current Design Profile
-*   **Theme:** Light Theme (White/Slate-Grey) with Blue primary accents.
-*   **Shadow Hierarchy:** Combined multi-layered shadows for depth (`shadow-[0_8px_20px...]`).
+*   **Theme:** Light Theme (White/Slate-Grey) with Blue accents.
+*   **Status Indicators:** Color-coded urgency and trust badges (Green/Amber/Red).

@@ -25,11 +25,28 @@ export interface Region {
   supporting_facts: string[];
 }
 
+export interface Constraint {
+  dimension: string;
+  field: string;
+  operator: string;
+  value: any;
+  priority: string;
+}
+
 export interface MockResponse {
   query: string;
   query_type: QueryType;
   map_mode: 'facility_markers' | 'choropleth';
   summary: string;
+  
+  // New AI Analysis fields
+  medical_need?: string;
+  urgency?: string;
+  reasoning_steps?: string[];
+  constraints?: Constraint[];
+  candidate_pool_size?: number;
+  recommended_result_count?: number;
+  
   filters_interpreted?: Record<string, any>;
   ranking: Facility[];
   regions: Region[];

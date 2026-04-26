@@ -2,33 +2,24 @@
 
 ## 1. Architecture & Framework
 *   **Tech Stack:** Python 3.12, FastAPI, Uvicorn.
-*   **Structure:** Modular design with separation of concerns:
-    *   `main.py`: Entry point, CORS configuration, and environment loading.
-    *   `app/api/`: REST endpoints (FastAPI Router).
-    *   `app/services/`: External service integrations (Databricks).
-    *   `app/models/`: Pydantic schemas for request/response validation.
+*   **Context Management:** Fully implemented memory logic by passing `previous_query` into the Databricks execution string.
 
 ## 2. API Endpoints
 *   **POST `/api/analyze`**: 
-    *   Accepts `query` (natural language) and optional `previous_query` (memory/context).
-    *   Triggers the Databricks Analysis Job.
-    *   Returns structured results including job IDs and notebook output.
+    *   **Request Model:** `query` (string) + optional `previous_query` (string).
+    *   **Rich Response:** Returns not only results but also a `query_reasoning` block including medical need, urgency, logical steps, and structured constraints.
 
-## 3. Databricks Integration
-*   **SDK:** Utilizes the official `databricks-sdk` for secure workspace interaction.
-*   **Job Execution:**
-    *   Triggers a specific Notebook Job (ID: `787825749675163`).
-    *   **Context Awareness:** Passes a combined context string `[Context: previous_query] current_query` to the notebook via `postal_code` parameter.
-    *   **Result Retrieval:** Waits for job completion and extracts the `notebook_output` for the frontend.
-*   **Performance:** Configured with a 10-minute timeout for complex analysis models.
+## 3. Databricks Service Integration
+*   **Prompt Orchestration:** Combines history and current user intent into a formatted prompt prefix `[Context: ...]`.
+*   **Output Handling:**
+    *   Retrieves JSON output from notebook tasks.
+    *   Logs successful responses and errors to the terminal for debugging.
+    *   Timeout handling (10m) for complex LLM + Data processing chains.
 
-## 4. Security & Configuration
-*   **Environment Variables:** Managed via `.env` file (ignored by Git).
-*   **Authentication:** Uses `DATABRICKS_TOKEN` for WorkspaceClient authorization.
-*   **CORS:** Enabled for frontend communication (currently allowing all origins for development).
+## 4. Security & Environment
+*   **Secret Management:** Strictly uses `.env` for `DATABRICKS_TOKEN`.
+*   **Git Integrity:** Robust `.gitignore` configuration for virtual environments (`venv`) and sensitive keys.
 
-## Dependencies
-*   `fastapi`, `uvicorn`: Web server logic.
-*   `databricks-sdk`: Cloud workspace interaction.
-*   `python-dotenv`: Environment management.
-*   `pydantic`: Data modeling.
+## Deployment & Setup
+*   Requires a Python Virtual Environment (`venv`).
+*   Dependencies: `fastapi`, `uvicorn`, `databricks-sdk`, `python-dotenv`.

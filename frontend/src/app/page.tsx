@@ -84,7 +84,14 @@ export default function Home() {
             query: query,
             query_type: 'facility_search',
             ranking: transformedRanking,
-            regions: []
+            regions: [],
+            // New reasoning data
+            medical_need: rawNotebookData.query_reasoning?.medical_need,
+            urgency: rawNotebookData.query_reasoning?.urgency,
+            reasoning_steps: rawNotebookData.query_reasoning?.reasoning_steps || [],
+            constraints: rawNotebookData.query_reasoning?.constraints || [],
+            candidate_pool_size: rawNotebookData.candidate_pool_size,
+            recommended_result_count: rawNotebookData.recommended_result_count
           });
         } else {
           throw new Error("No results in notebook output");

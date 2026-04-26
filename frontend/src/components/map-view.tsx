@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -16,11 +16,24 @@ const getRedColor = (score: number) => {
   return '#fef0d9'; // Pale Yellow/Red
 };
 
+// Helper to lighten a hex color for the hover effect
+const lightenColor = (hex: string) => {
+  const amount = 40; 
+  const clamp = (val: number) => Math.min(Math.max(val, 0), 255);
+  const cleanHex = hex.startsWith('#') ? hex.slice(1) : hex;
+  const r = clamp(parseInt(cleanHex.slice(0, 2), 16) + amount);
+  const g = clamp(parseInt(cleanHex.slice(2, 4), 16) + amount);
+  const b = clamp(parseInt(cleanHex.slice(4, 6), 16) - amount); // Slightly less blue to stay in red/yellow spectrum
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+};
+
 // Internal component to handle view changes
 function MapController({ data }: { data: MockResponse }) {
   const map = useMap();
 
   useEffect(() => {
+    if (!map) return;
+    
     if (data.ranking && data.ranking.length > 0) {
       const bounds = L.latLngBounds(data.ranking.map(f => [f.lat, f.lng]));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
@@ -59,7 +72,7 @@ interface MapViewProps {
   onHover: (id: string | number | null) => void;
 }
 
-export default function MapView({ data, isDarkMode = false, hoveredId, onHover }: MapViewProps) {
+function MapViewComponent({ data, isDarkMode = false, hoveredId, onHover }: MapViewProps) {
   const center: [number, number] = [22.5937, 78.9629]; // Center of India
   const zoom = 5;
   const bounds: L.LatLngBoundsExpression = [
@@ -70,13 +83,11 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
 
   useEffect(() => {
-    if (!geoJsonData) {
-      fetch('/india-states.geojson')
-        .then(res => res.json())
-        .then(data => setGeoJsonData(data))
-        .catch(err => console.error("Failed to load India GeoJSON", err));
-    }
-  }, [geoJsonData]);
+    fetch('/india-states.geojson')
+      .then(res => res.json())
+      .then(data => setGeoJsonData(data))
+      .catch(err => console.error("Failed to load India GeoJSON", err));
+  }, []);
 
   const getFeatureStyle = (feature: any) => {
     const stateName = feature.properties.NAME_1;
@@ -87,20 +98,26 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
 
     if (regionData) {
       const isHovered = hoveredId === regionData.region_id;
+      const baseColor = getRedColor(regionData.risk_score);
+      const displayColor = isHovered ? lightenColor(baseColor) : baseColor;
+
       return {
-        fillColor: getRedColor(regionData.risk_score),
-        weight: isHovered ? 2 : 0,
-        opacity: isHovered ? 1 : 0,
-        color: '#1e40af',
-        fillOpacity: isHovered ? 0.9 : 0.75
+        fillColor: displayColor,
+        weight: isHovered ? 1.5 : 0.5,
+        opacity: isHovered ? 1 : 0.3,
+        color: '#ffffff',
+        fillOpacity: 0.75,
+        className: `map-region ${isHovered ? 'map-region-hover' : ''}`
       };
     }
 
     return {
       fillColor: '#cbd5e1',
-      weight: 0,
-      opacity: 0,
-      fillOpacity: 0.37
+      weight: 0.5,
+      opacity: 0.1,
+      color: '#ffffff',
+      fillOpacity: 0.37,
+      className: 'map-region'
     };
   };
 
@@ -113,7 +130,11 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
 
     if (regionData) {
       layer.on({
-        mouseover: () => onHover(regionData.region_id),
+        mouseover: (e) => {
+          onHover(regionData.region_id);
+          const l = e.target;
+          if (l.bringToFront) l.bringToFront();
+        },
         mouseout: () => onHover(null),
       });
 
@@ -130,57 +151,69 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
     }
   };
 
+  // Memoize Marker list to avoid re-rendering markers if only hoveredId changed
+  const markers = useMemo(() => {
+    if (data.query_type === 'regional_gap') return null;
+    return data.ranking.map((facility, idx) => {
+      const isHovered = hoveredId === facility.rank;
+      return (
+        <Marker
+          key={`${facility.rank}-${idx}`}
+          position={[facility.lat, facility.lng]}
+          icon={getPinIcon(isHovered)}
+          zIndexOffset={isHovered ? 1000 : 0}
+          eventHandlers={{
+            mouseover: () => onHover(facility.rank),
+            mouseout: () => onHover(null)
+          }}
+        >
+          <Popup>
+            <div className="text-slate-900 text-xs p-1">
+              <h3 className="font-bold border-b border-slate-100 pb-1 mb-1">{facility.facility_name}</h3>
+              <p className="text-slate-500">{facility.district}</p>
+              <div className="mt-1 font-bold text-blue-600">Match: ${(facility.match_score * 100).toFixed(0)}%</div>
+            </div>
+          </Popup>
+        </Marker>
+      );
+    });
+  }, [data.ranking, data.query_type, hoveredId, onHover]);
+
   return (
-    <MapContainer
-      center={center}
-      zoom={zoom}
-      minZoom={3}
-      maxBounds={bounds}
-      maxBoundsViscosity={1.0}
-      zoomControl={false}
-      attributionControl={false}
-      className="h-full w-full z-0"
-      style={{ background: '#f8fafc' }}
-    >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        noWrap={true}
-      />
-
-      <MapController data={data} />
-
-      {geoJsonData && (
-        <GeoJSON
-          key={data.query_type + (hoveredId || 'base')}
-          data={geoJsonData}
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
+    <div className="h-full w-full relative">
+      <MapContainer
+        key="map-instance" // Static key to prevent destruction of the container itself
+        center={center}
+        zoom={zoom}
+        minZoom={3}
+        maxBounds={bounds}
+        maxBoundsViscosity={1.0}
+        zoomControl={false}
+        attributionControl={false}
+        className="h-full w-full z-0"
+        style={{ background: '#f8fafc' }}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          noWrap={true}
         />
-      )}
 
-      {data.query_type !== 'regional_gap' && data.ranking.map((facility, idx) => {
-        const isHovered = hoveredId === facility.rank;
-        return (
-          <Marker
-            key={idx}
-            position={[facility.lat, facility.lng]}
-            icon={getPinIcon(isHovered)}
-            zIndexOffset={isHovered ? 1000 : 0}
-            eventHandlers={{
-              mouseover: () => onHover(facility.rank),
-              mouseout: () => onHover(null)
-            }}
-          >
-            <Popup>
-              <div className="text-slate-900 text-xs p-1">
-                <h3 className="font-bold border-b border-slate-100 pb-1 mb-1">${facility.facility_name}</h3>
-                <p className="text-slate-500">${facility.district}</p>
-                <div className="mt-1 font-bold text-blue-600">Match: ${(facility.match_score * 100).toFixed(0)}%</div>
-              </div>
-            </Popup>
-          </Marker>
-        );
-      })}
-    </MapContainer>
+        <MapController data={data} />
+
+        {geoJsonData && (
+          <GeoJSON
+            key={`geojson-${data.query_type}`} // Key changes only on data type change
+            data={geoJsonData}
+            style={getFeatureStyle}
+            onEachFeature={onEachFeature}
+          />
+        )}
+
+        {markers}
+      </MapContainer>
+    </div>
   );
 }
+
+// Memoize the whole component to prevent unnecessary re-renders from parent state changes
+export default React.memo(MapViewComponent);

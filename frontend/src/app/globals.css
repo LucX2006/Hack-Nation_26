@@ -15,3 +15,90 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom Leaflet Path Scaling */
+.map-region {
+  transition: all 0.3s ease-out !important;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: auto;
+}
+
+.map-region-hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.15));
+  cursor: pointer;
+  z-index: 1000;
+}
+
+/* 3D Scrolling & Fading Effect */
+.results-container {
+  perspective: 1000px;
+}
+
+.sticky-header-fade {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: linear-gradient(to bottom, white 85%, transparent);
+  padding-bottom: 20px;
+}
+
+.sticky-footer-fade {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: linear-gradient(to top, white 60%, transparent);
+  height: 40px;
+  pointer-events: none;
+  margin-top: -40px;
+}
+
+.scroll-fade-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.card-3d-item {
+  scroll-margin-top: 140px; 
+  scroll-margin-bottom: 80px;
+}
+
+.card-3d-effect {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top center;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* We use a slight scroll-driven animation style if supported, otherwise static is fine */
+@supports (animation-timeline: scroll()) {
+  .card-3d-item {
+    view-timeline-name: --item-visible;
+    view-timeline-axis: block;
+    animation: fade-and-tilt linear both;
+    animation-timeline: --item-visible;
+    animation-range: entry 0% cover 30%;
+  }
+
+  @keyframes fade-and-tilt {
+    from {
+      opacity: 0;
+      transform: translateY(20px) rotateX(-10deg) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) rotateX(0) scale(1);
+    }
+  }
+}
