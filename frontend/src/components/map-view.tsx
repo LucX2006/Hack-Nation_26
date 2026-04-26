@@ -80,11 +80,11 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
 
   const getFeatureStyle = (feature: any) => {
     const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r => 
-      r.name === stateName || 
+    const regionData = data.regions?.find(r =>
+      r.name === stateName ||
       (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
     );
-    
+
     if (regionData) {
       const isHovered = hoveredId === regionData.region_id;
       return {
@@ -95,19 +95,19 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
         fillOpacity: isHovered ? 0.9 : 0.75
       };
     }
-    
+
     return {
       fillColor: '#cbd5e1',
       weight: 0,
       opacity: 0,
-      fillOpacity: 0.55
+      fillOpacity: 0.37
     };
   };
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r => 
-      r.name === stateName || 
+    const regionData = data.regions?.find(r =>
+      r.name === stateName ||
       (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
     );
 
@@ -131,9 +131,9 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
   };
 
   return (
-    <MapContainer 
-      center={center} 
-      zoom={zoom} 
+    <MapContainer
+      center={center}
+      zoom={zoom}
       minZoom={3}
       maxBounds={bounds}
       maxBoundsViscosity={1.0}
@@ -146,13 +146,13 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         noWrap={true}
       />
-      
+
       <MapController data={data} />
-      
+
       {geoJsonData && (
-        <GeoJSON 
-          key={data.query_type + (hoveredId || 'base')} 
-          data={geoJsonData} 
+        <GeoJSON
+          key={data.query_type + (hoveredId || 'base')}
+          data={geoJsonData}
           style={getFeatureStyle}
           onEachFeature={onEachFeature}
         />
@@ -161,9 +161,9 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
       {data.query_type !== 'regional_gap' && data.ranking.map((facility, idx) => {
         const isHovered = hoveredId === facility.rank;
         return (
-          <Marker 
-            key={idx} 
-            position={[facility.lat, facility.lng]} 
+          <Marker
+            key={idx}
+            position={[facility.lat, facility.lng]}
             icon={getPinIcon(isHovered)}
             zIndexOffset={isHovered ? 1000 : 0}
             eventHandlers={{
