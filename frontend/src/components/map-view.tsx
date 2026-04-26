@@ -25,7 +25,6 @@ function MapController({ data }: { data: MockResponse }) {
       const bounds = L.latLngBounds(data.ranking.map(f => [f.lat, f.lng]));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
     } else if (data.query_type === 'regional_gap') {
-      // Zoom out slightly to show the whole country for the heatmap
       map.setView([22.5937, 78.9629], 5);
     }
   }, [data, map]);
@@ -71,42 +70,46 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
   const [geoJsonData, setGeoJsonData] = useState<any>(null);
 
   useEffect(() => {
-    if (data.query_type === 'regional_gap' && !geoJsonData) {
+    if (!geoJsonData) {
       fetch('/india-states.geojson')
         .then(res => res.json())
         .then(data => setGeoJsonData(data))
         .catch(err => console.error("Failed to load India GeoJSON", err));
     }
-  }, [data.query_type, geoJsonData]);
+  }, [geoJsonData]);
 
-  // Define styling for the GeoJSON layer
   const getFeatureStyle = (feature: any) => {
     const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r => r.name === stateName);
+    const regionData = data.regions?.find(r => 
+      r.name === stateName || 
+      (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
+    );
     
     if (regionData) {
       const isHovered = hoveredId === regionData.region_id;
       return {
         fillColor: getRedColor(regionData.risk_score),
-        weight: isHovered ? 3 : 1,
-        opacity: 1,
-        color: isHovered ? '#1e40af' : '#ffffff', // Blue border on hover
-        fillOpacity: isHovered ? 0.9 : 0.7
+        weight: isHovered ? 2 : 0,
+        opacity: isHovered ? 1 : 0,
+        color: '#1e40af',
+        fillOpacity: isHovered ? 0.9 : 0.75
       };
     }
     
     return {
-      fillColor: '#cbd5e1', // Default gray for states without data
-      weight: 1,
-      opacity: 1,
-      color: '#ffffff',
-      fillOpacity: 0.3
+      fillColor: '#cbd5e1',
+      weight: 0,
+      opacity: 0,
+      fillOpacity: 0.55
     };
   };
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r => r.name === stateName);
+    const regionData = data.regions?.find(r => 
+      r.name === stateName || 
+      (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
+    );
 
     if (regionData) {
       layer.on({
@@ -124,8 +127,6 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
           </div>
         </div>
       `);
-    } else {
-      layer.bindPopup(`<div class="text-xs font-bold text-slate-500">${stateName} (No Data)</div>`);
     }
   };
 
@@ -148,7 +149,15 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
       
       <MapController data={data} />
       
-      {/* Analysis Markers (Facilities) */}
+      {geoJsonData && (
+        <GeoJSON 
+          key={data.query_type + (hoveredId || 'base')} 
+          data={geoJsonData} 
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
+
       {data.query_type !== 'regional_gap' && data.ranking.map((facility, idx) => {
         const isHovered = hoveredId === facility.rank;
         return (
@@ -164,24 +173,14 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
           >
             <Popup>
               <div className="text-slate-900 text-xs p-1">
-                <h3 className="font-bold border-b border-slate-100 pb-1 mb-1">{facility.facility_name}</h3>
-                <p className="text-slate-500">{facility.district}</p>
-                <div className="mt-1 font-bold text-blue-600">Match: {(facility.match_score * 100).toFixed(0)}%</div>
+                <h3 className="font-bold border-b border-slate-100 pb-1 mb-1">${facility.facility_name}</h3>
+                <p className="text-slate-500">${facility.district}</p>
+                <div className="mt-1 font-bold text-blue-600">Match: ${(facility.match_score * 100).toFixed(0)}%</div>
               </div>
             </Popup>
           </Marker>
         );
       })}
-
-      {/* Analysis Regions (GeoJSON Heatmap) */}
-      {data.query_type === 'regional_gap' && geoJsonData && (
-        <GeoJSON 
-          key={hoveredId || 'base'} // Re-render when hover changes to update styles
-          data={geoJsonData} 
-          style={getFeatureStyle}
-          onEachFeature={onEachFeature}
-        />
-      )}
     </MapContainer>
   );
 }

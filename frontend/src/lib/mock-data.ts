@@ -142,6 +142,18 @@ export const MOCK_RESPONSES: Record<string, MockResponse> = {
         ]
       },
       {
+        region_id: "IN-LA",
+        name: "Ladakh",
+        risk_score: 0.92,
+        coverage_score: 0.08,
+        confidence: 0.45,
+        primary_gap: "Emergency Oxygen",
+        supporting_facts: [
+          "Extremely sparse facility density in high-altitude zones",
+          "Logistical challenges for oxygen supply chain"
+        ]
+      },
+      {
         region_id: "IN-UP",
         name: "Uttar Pradesh",
         risk_score: 0.95,
