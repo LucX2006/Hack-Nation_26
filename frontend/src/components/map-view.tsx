@@ -90,11 +90,14 @@ function MapViewComponent({ data, isDarkMode = false, hoveredId, onHover }: MapV
   }, []);
 
   const getFeatureStyle = (feature: any) => {
-    const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r =>
-      r.name === stateName ||
-      (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
-    );
+    const stateName = (feature.properties.NAME_1 || "").toLowerCase().trim();
+    const regionData = data.regions?.find(r => {
+      const rName = (r.name || "").toLowerCase().trim();
+      return rName === stateName || 
+             (stateName === "jammu and kashmir" && rName === "ladakh") ||
+             (stateName === "orissa" && rName === "odisha") ||
+             (stateName === "uttaranchal" && rName === "uttarakhand");
+    });
 
     if (regionData) {
       const isHovered = hoveredId === regionData.region_id;
@@ -122,11 +125,14 @@ function MapViewComponent({ data, isDarkMode = false, hoveredId, onHover }: MapV
   };
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
-    const stateName = feature.properties.NAME_1;
-    const regionData = data.regions?.find(r =>
-      r.name === stateName ||
-      (stateName === "Jammu and Kashmir" && r.name === "Ladakh")
-    );
+    const stateName = (feature.properties.NAME_1 || "").toLowerCase().trim();
+    const regionData = data.regions?.find(r => {
+      const rName = (r.name || "").toLowerCase().trim();
+      return rName === stateName || 
+             (stateName === "jammu and kashmir" && rName === "ladakh") ||
+             (stateName === "orissa" && rName === "odisha") ||
+             (stateName === "uttaranchal" && rName === "uttarakhand");
+    });
 
     if (regionData) {
       layer.on({

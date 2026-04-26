@@ -120,7 +120,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
           onClick={onReset}
           className="flex items-center gap-2 text-blue-600 font-bold text-xl shrink-0 hover:text-blue-700 transition-colors"
         >
-          <ShieldCheck size={28} />
+          <ShieldCheck size={28} className="fill-blue-600 text-white" />
           <span>HealthPlan AI</span>
         </button>
         <div className="flex-1">
@@ -152,74 +152,15 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
           {/* Upper Scrollable Part: Results */}
           <div className="flex-1 overflow-y-auto hide-scrollbar relative">
             
-            {/* AI Reasoning Section */}
-            {data.reasoning_steps && data.reasoning_steps.length > 0 && (
-              <section className="p-6 border-b border-slate-50 bg-slate-50/30">
-                <button 
-                  onClick={() => setIsAiAnalysisOpen(!isAiAnalysisOpen)}
-                  className="flex items-center justify-between w-full mb-4 text-slate-700 font-bold text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    <BrainCircuit size={16} className="text-blue-500" />
-                    AI Query Analysis
-                  </div>
-                  {isAiAnalysisOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                </button>
-
-                {isAiAnalysisOpen && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {/* Metrics Chips */}
-                    <div className="flex flex-wrap gap-2">
-                      {data.urgency && (
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${data.urgency === 'high' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                          Urgency: {data.urgency}
-                        </span>
-                      )}
-                      {data.candidate_pool_size !== undefined && (
-                        <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-medium text-slate-600">
-                          <Database size={10} />
-                          <span>Pool: {data.candidate_pool_size}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Reasoning Steps */}
-                    <div className="space-y-2">
-                      {data.reasoning_steps.map((step: string, i: number) => (
-                        <div key={i} className="flex gap-2 text-[11px] text-slate-500 leading-tight">
-                          <span className="text-blue-400 font-bold">{i+1}.</span>
-                          <span>{step}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Constraints / Filters */}
-                    {data.constraints && data.constraints.length > 0 && (
-                      <div className="pt-2">
-                        <div className="flex items-center gap-1.5 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          <Filter size={10} />
-                          <span>Applied Constraints</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {data.constraints.map((c: Constraint, i: number) => (
-                            <div key={i} className="px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] text-slate-600 shadow-sm">
-                              <span className="font-bold text-blue-500">{c.dimension}:</span> {String(c.value)}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-            )}
-
             <section className="relative min-h-full">
               {/* Sticky Header with Fade Background */}
               <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white/95 backdrop-blur-sm border-b border-slate-50 flex items-center justify-between shadow-sm">
-                <h3 className="font-bold text-slate-900 text-lg">
-                  {data.query_type === 'regional_gap' ? 'Regional Risk Rankings' : 'Facility Match Results'}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={20} className="fill-blue-600 text-white" />
+                  <h3 className="font-bold text-slate-900 text-lg">
+                    {data.query_type === 'regional_gap' ? 'Regional Risk Rankings' : 'Facility Match Results'}
+                  </h3>
+                </div>
                 <span className="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full">
                   {(data.ranking?.length || data.regions?.length || 0)} Results
                 </span>
@@ -228,7 +169,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
               </div>
 
               {/* Reduced pt to bring content higher up */}
-              <div className="p-6 pt-4 pb-32 space-y-4 results-container hide-scrollbar">
+              <div className="p-6 pt-4 pb-8 space-y-4 results-container hide-scrollbar">
                 {data.query_type === 'regional_gap' ? (
                   [...data.regions]
                     .sort((a, b) => b.risk_score - a.risk_score)
@@ -278,7 +219,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                               <span className="text-xs font-bold text-blue-500">#{facility.rank}</span>
                               {facility.trust_score !== undefined && (
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
-                                  <Shield size={10} className={ facility.trust_score > 0.8 ? "text-green-500" : "text-amber-500" } />
+                                  <ShieldCheck size={10} className={ facility.trust_score > 0.8 ? "fill-green-500 text-white" : "fill-amber-500 text-white" } />
                                   <span>Trust {(facility.trust_score * 100).toFixed(0)}%</span>
                                 </div>
                               )}
@@ -288,9 +229,8 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                           
                           <div className="flex items-center gap-3 mb-2">
                             <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                              <div className={`h-full transition-all duration-500 ${isHovered ? 'bg-blue-600' : 'bg-blue-50'}`} style={{ width: `${facility.match_score * 100}%` }}></div>
-                            </div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Match {(facility.match_score * 100).toFixed(0)}%</span>
+                              <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${facility.match_score * 100}%` }}></div>
+                            </div>                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Match {(facility.match_score * 100).toFixed(0)}%</span>
                           </div>
 
                           <div className="flex items-center justify-between text-[10px] text-blue-600/70 font-medium">
@@ -314,6 +254,64 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                   })
                 )}
               </div>
+
+              {/* AI Reasoning Section moved below results */}
+              {data.reasoning_steps && data.reasoning_steps.length > 0 && (
+                <section className="p-6 pb-32 border-t border-slate-50 bg-slate-50/30">
+                  <button 
+                    onClick={() => setIsAiAnalysisOpen(!isAiAnalysisOpen)}
+                    className="flex items-center justify-between w-full mb-4 text-slate-700 font-bold text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BrainCircuit size={16} className="text-blue-500" />
+                      AI Query Analysis
+                    </div>
+                    {isAiAnalysisOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </button>
+
+                  {isAiAnalysisOpen && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {/* Metrics Chips */}
+                      <div className="flex flex-wrap gap-2">
+                        {data.candidate_pool_size !== undefined && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-[10px] font-medium text-slate-600">
+                            <Database size={10} />
+                            <span>Pool: {data.candidate_pool_size}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Reasoning Steps */}
+                      <div className="space-y-2">
+                        {data.reasoning_steps.map((step: string, i: number) => (
+                          <div key={i} className="flex gap-2 text-[11px] text-slate-500 leading-tight">
+                            <span className="text-blue-400 font-bold">{i+1}.</span>
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Constraints / Filters */}
+                      {data.constraints && data.constraints.length > 0 && (
+                        <div className="pt-2">
+                          <div className="flex items-center gap-1.5 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <Filter size={10} />
+                            <span>Applied Constraints</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {data.constraints.map((c: Constraint, i: number) => (
+                              <div key={i} className="px-2 py-1 bg-white border border-slate-200 rounded-md text-[10px] text-slate-600 shadow-sm">
+                                <span className="font-bold text-blue-500">{c.dimension}:</span> {String(c.value)}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </section>
+              )}
+
               {/* Bottom Sticky Fade */}
               <div className="sticky-footer-fade" />
             </section>
@@ -335,7 +333,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
               <div>
                 <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold text-sm">
                   <div className="p-1 bg-blue-600 rounded text-white">
-                    <MessageSquare size={14} />
+                    <ShieldCheck size={14} className="fill-white text-blue-600" />
                   </div>
                   <h3>Follow-up</h3>
                 </div>

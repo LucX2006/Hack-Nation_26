@@ -46,55 +46,82 @@ export default function Home() {
           : result.notebook_output;
         
         // TRANSFORMER: Map Databricks results to Frontend MockResponse structure
-        if (rawNotebookData && rawNotebookData.results) {
-          const cityCoords: Record<string, [number, number]> = {
-            'mumbai': [19.0760, 72.8777],
-            'delhi': [28.6139, 77.2090],
-            'bangalore': [12.9716, 77.5946],
-            'kolkata': [22.5726, 88.3639],
-            'chennai': [13.0827, 80.2707],
-            'pune': [18.5204, 73.8567],
-            'surat': [21.1702, 72.8311],
-            'jaipur': [26.9124, 75.7873],
-            'lucknow': [26.8467, 80.9462],
-            'patna': [25.5941, 85.1376],
-            'bihar': [25.0961, 85.3131]
-          };
+        if (rawNotebookData && rawNotebookData.ok) {
+          const isCoverageMode = rawNotebookData.mode === 'coverage';
+          
+          let transformedRanking: any[] = [];
+          let transformedRegions: any[] = [];
 
-          const transformedRanking = rawNotebookData.results.map((item: any, idx: number) => {
-            const rawCity = (item.city || "").toLowerCase();
-            const matchedCityKey = Object.keys(cityCoords).find(key => rawCity.includes(key));
-            const cityFallback = matchedCityKey ? cityCoords[matchedCityKey] : [20.5937, 78.9629];
-            const jitter = () => (Math.random() - 0.5) * 0.15;
-
-            return {
-              rank: idx + 1,
-              facility_name: item.name || "Unknown Facility",
-              district: item.city || "Unknown District",
-              state: item.state || "India",
-              match_score: item.final_score || 0.5,
-              trust_score: item.judge?.trust_penalty !== undefined ? (1.0 - item.judge.trust_penalty) : 0.8, // Calculated or default
-              lat: item.lat || (cityFallback[0] + jitter()), 
-              lng: item.lon || item.lng || (cityFallback[1] + jitter()),
-              reasoning_summary: item.judge?.reasoning ? [item.judge.reasoning] : ["High quality healthcare match."]
+          if (isCoverageMode) {
+            // Map Coverage Results to Regions
+            transformedRegions = (rawNotebookData.results || []).map((item: any) => ({
+              region_id: `reg-${item.area_name}`,
+              name: item.area_name || "Unknown State",
+              risk_score: item.desert_score || (1.0 - (item.coverage_score || 0)),
+              coverage_score: item.coverage_score || 0,
+              confidence: item.confidence_score || 0,
+              primary_gap: rawNotebookData.medical_need || "Healthcare Gap",
+              supporting_facts: [
+                `${item.facility_count} facilities found in this area.`,
+                `Average trust score: ${(item.avg_trust * 100).toFixed(1)}%`
+              ]
+            }));
+          } else {
+            // Map Facility Results to Ranking
+            const cityCoords: Record<string, [number, number]> = {
+              'mumbai': [19.0760, 72.8777],
+              'delhi': [28.6139, 77.2090],
+              'bangalore': [12.9716, 77.5946],
+              'kolkata': [22.5726, 88.3639],
+              'chennai': [13.0827, 80.2707],
+              'pune': [18.5204, 73.8567],
+              'surat': [21.1702, 72.8311],
+              'jaipur': [26.9124, 75.7873],
+              'lucknow': [26.8467, 80.9462],
+              'patna': [25.5941, 85.1376],
+              'bihar': [25.0961, 85.3131]
             };
-          });
+
+            transformedRanking = (rawNotebookData.results || []).map((item: any, idx: number) => {
+              const rawCity = (item.city || "").toLowerCase();
+              const matchedCityKey = Object.keys(cityCoords).find(key => rawCity.includes(key));
+              const cityFallback = matchedCityKey ? cityCoords[matchedCityKey] : [20.5937, 78.9629];
+              const jitter = () => (Math.random() - 0.5) * 0.15;
+
+              return {
+                rank: idx + 1,
+                facility_name: item.name || "Unknown Facility",
+                district: item.city || "Unknown District",
+                state: item.state || "India",
+                match_score: item.judge?.match_score || item.final_score || 0.5,
+                trust_score: item.judge?.trust_penalty !== undefined ? (1.0 - item.judge.trust_penalty) : 0.8,
+                lat: item.lat || (cityFallback[0] + jitter()), 
+                lng: item.lon || item.lng || (cityFallback[1] + jitter()),
+                reasoning_summary: item.judge?.reasoning ? [item.judge.reasoning] : ["High quality healthcare match."]
+              };
+            });
+          }
 
           setActiveData({
             query: query,
-            query_type: 'facility_search',
+            query_type: isCoverageMode ? 'regional_gap' : 'facility_search',
+            map_mode: isCoverageMode ? 'choropleth' : 'facility_markers',
+            summary: isCoverageMode 
+              ? `Regional analysis for ${rawNotebookData.medical_need} completed.`
+              : `${transformedRanking.length} facilities match strongly; the best options are listed below.`,
             ranking: transformedRanking,
-            regions: [],
+            regions: transformedRegions,
             // New reasoning data
             medical_need: rawNotebookData.query_reasoning?.medical_need,
             urgency: rawNotebookData.query_reasoning?.urgency,
             reasoning_steps: rawNotebookData.query_reasoning?.reasoning_steps || [],
             constraints: rawNotebookData.query_reasoning?.constraints || [],
             candidate_pool_size: rawNotebookData.candidate_pool_size,
-            recommended_result_count: rawNotebookData.recommended_result_count
+            recommended_result_count: rawNotebookData.recommended_result_count,
+            follow_up_questions: []
           });
         } else {
-          throw new Error("No results in notebook output");
+          throw new Error("Invalid response structure or no results");
         }
       } catch (e) {
         console.warn('Could not parse or map notebook output, falling back to mock:', e);
