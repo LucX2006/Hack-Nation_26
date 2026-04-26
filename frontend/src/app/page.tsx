@@ -73,8 +73,9 @@ export default function Home() {
               district: item.city || "Unknown District",
               state: item.state || "India",
               match_score: item.final_score || 0.5,
+              trust_score: item.judge?.trust_penalty !== undefined ? (1.0 - item.judge.trust_penalty) : 0.8, // Calculated or default
               lat: item.lat || (cityFallback[0] + jitter()), 
-              lng: item.lng || (cityFallback[1] + jitter()),
+              lng: item.lon || item.lng || (cityFallback[1] + jitter()),
               reasoning_summary: item.judge?.reasoning ? [item.judge.reasoning] : ["High quality healthcare match."]
             };
           });

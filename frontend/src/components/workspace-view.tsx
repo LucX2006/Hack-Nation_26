@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ShieldCheck, Send, ChevronDown, ChevronUp, MessageSquare, Sparkles } from 'lucide-react';
+import { ShieldCheck, Send, ChevronDown, ChevronUp, MessageSquare, Sparkles, Shield } from 'lucide-react';
 import { MockResponse } from '../lib/mock-data';
 
 // Dynamically import MapView to avoid SSR issues with Leaflet
@@ -120,7 +120,15 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                             <h4 className={`font-semibold text-sm transition-colors pr-6 ${isHovered ? 'text-blue-600' : 'text-slate-800'}`}>
                               {facility.facility_name}
                             </h4>
-                            <span className="text-xs font-bold text-blue-500 shrink-0">#{facility.rank}</span>
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              <span className="text-xs font-bold text-blue-500">#{facility.rank}</span>
+                              {facility.trust_score !== undefined && (
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
+                                  <Shield size={10} className={ facility.trust_score > 0.8 ? "text-green-500" : "text-amber-500" } />
+                                  <span>Trust {(facility.trust_score * 100).toFixed(0)}%</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <p className="text-[11px] text-slate-400 mb-3">{facility.district}, {facility.state}</p>
                           
