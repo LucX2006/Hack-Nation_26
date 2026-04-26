@@ -1,10 +1,26 @@
 'use client';
 
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MockResponse } from '../lib/mock-data';
+
+// Internal component to handle view changes
+function MapController({ data }: { data: MockResponse }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (data.ranking && data.ranking.length > 0) {
+      const bounds = L.latLngBounds(data.ranking.map(f => [f.lat, f.lng]));
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+    } else if (data.regions && data.regions.length > 0) {
+      // Logic for regions could be added here if they have coords
+    }
+  }, [data, map]);
+
+  return null;
+}
 
 // Function to generate Custom Pin Icon with dynamic scaling
 const getPinIcon = (isHovered: boolean) => {
@@ -57,6 +73,8 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         noWrap={true}
       />
+      
+      <MapController data={data} />
       
       {/* Analysis Markers (Facilities) */}
       {data.query_type !== 'regional_gap' && data.ranking.map((facility, idx) => {

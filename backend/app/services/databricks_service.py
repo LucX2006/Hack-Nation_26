@@ -9,12 +9,14 @@ class DatabricksService:
         self.job_id = 787825749675163
         self.w = WorkspaceClient(host=self.host, token=self.token)
 
-    async def trigger_job_run(self, query: str):
-        # Wir nutzen hier 'query' statt 'postal_code', um flexibler für die NGO-Suche zu sein
+    async def trigger_job_run(self, query: str, previous_query: str | None = None):
+        # Wir kombinieren den aktuellen Query mit dem vorherigen Kontext
+        full_context = f"[Context: {previous_query}] {query}" if previous_query else query
+        
         waiter = self.w.jobs.run_now(
             job_id=self.job_id,
             notebook_params={
-                "postal_code": query 
+                "postal_code": full_context 
             }
         )
 

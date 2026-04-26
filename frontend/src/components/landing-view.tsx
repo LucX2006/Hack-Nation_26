@@ -3,14 +3,15 @@ import { Search, Sparkles } from 'lucide-react';
 
 interface LandingPromptProps {
   onSubmit: (query: string) => void;
+  isLoading?: boolean;
 }
 
-export const LandingPrompt: React.FC<LandingPromptProps> = ({ onSubmit }) => {
+export const LandingPrompt: React.FC<LandingPromptProps> = ({ onSubmit, isLoading = false }) => {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
+    if (query.trim() && !isLoading) {
       onSubmit(query);
     }
   };
@@ -27,17 +28,19 @@ export const LandingPrompt: React.FC<LandingPromptProps> = ({ onSubmit }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="w-full max-w-3xl relative">
-        <div className="relative group">
+        <div className={`relative group transition-opacity duration-300 ${isLoading ? 'opacity-60' : 'opacity-100'}`}>
           <input
             type="text"
             value={query}
+            disabled={isLoading}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for facilities, regional gaps or validation checks..."
-            className="w-full px-8 py-5 pr-16 text-lg rounded-full border border-slate-200 bg-white text-slate-900 shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
+            className={`w-full px-8 py-5 pr-16 text-lg rounded-full border border-slate-200 bg-white text-slate-900 shadow-xl focus:outline-none transition-all placeholder:text-slate-400 ${isLoading ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'}`}
           />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+            disabled={isLoading || !query.trim()}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center text-white rounded-full transition-colors shadow-lg ${isLoading || !query.trim() ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
           >
             <Search size={20} />
           </button>
