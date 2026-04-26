@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { ShieldCheck, Send, ChevronDown, ChevronUp, MessageSquare, Sparkles, Shield, BrainCircuit, Filter, Database } from 'lucide-react';
+import { Eye, Send, ChevronDown, ChevronUp, MessageSquare, Sparkles, Shield, BrainCircuit, Filter, Database, ShieldCheck } from 'lucide-react';
 import { MockResponse, Constraint } from '../lib/mock-data';
 
 // Dynamically import MapView to avoid SSR issues with Leaflet
@@ -118,10 +118,12 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center gap-6 shrink-0 z-20 shadow-md">
         <button
           onClick={onReset}
-          className="flex items-center gap-2 text-blue-600 font-bold text-xl shrink-0 hover:text-blue-700 transition-colors"
+          className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
         >
-          <ShieldCheck size={28} className="fill-blue-600 text-white" />
-          <span>HealthPlan AI</span>
+          <div className="bg-blue-600 p-1.5 rounded-lg text-white shadow-sm">
+            <Eye size={20} />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-slate-900">HealthLens</span>
         </button>
         <div className="flex-1">
           <div className="text-xs text-slate-400 font-medium truncate max-w-xl">
@@ -156,7 +158,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
               {/* Sticky Header with Fade Background */}
               <div className="sticky top-0 z-20 px-6 pt-6 pb-4 bg-white/95 backdrop-blur-sm border-b border-slate-50 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck size={20} className="fill-blue-600 text-white" />
+                  <Eye size={20} className="text-blue-600" />
                   <h3 className="font-bold text-slate-900 text-lg">
                     {data.query_type === 'regional_gap' ? 'Regional Risk Rankings' : 'Facility Match Results'}
                   </h3>
@@ -219,7 +221,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                               <span className="text-xs font-bold text-blue-500">#{facility.rank}</span>
                               {facility.trust_score !== undefined && (
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-slate-50 border border-slate-100 rounded text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
-                                  <ShieldCheck size={10} className={ facility.trust_score > 0.8 ? "fill-green-500 text-white" : "fill-amber-500 text-white" } />
+                                  <ShieldCheck size={10} className={ facility.trust_score > 0.8 ? "text-green-500" : "text-amber-500" } />
                                   <span>Trust {(facility.trust_score * 100).toFixed(0)}%</span>
                                 </div>
                               )}

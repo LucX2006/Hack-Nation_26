@@ -20,10 +20,10 @@ export const LandingPrompt: React.FC<LandingPromptProps> = ({ query, setQuery, o
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
-          What healthcare gap should we analyze?
+          What would you like to uncover?
         </h1>
         <p className="text-lg text-slate-500">
-          Ask about care access, facility readiness, or regional health deserts
+          Analyze care gaps, facility readiness, and regional health risks across India
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export const LandingPrompt: React.FC<LandingPromptProps> = ({ query, setQuery, o
             value={query}
             disabled={isLoading}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for facilities, regional gaps or validation checks..."
+            placeholder="Ask about underserved regions, trusted facilities, or care access risks"
             className={`w-full px-8 py-5 pr-16 text-lg rounded-full border border-slate-200 bg-white text-slate-900 shadow-xl focus:outline-none transition-all placeholder:text-slate-400 ${isLoading ? 'cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'}`}
           />
           <button

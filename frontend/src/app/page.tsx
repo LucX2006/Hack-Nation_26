@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { LandingPrompt, SuggestedPrompts } from '@/components/landing-view';
 import { Workspace } from '@/components/workspace-view';
 import { MOCK_RESPONSES, MockResponse } from '@/lib/mock-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye } from 'lucide-react';
 
 export default function Home() {
   const [view, setView] = useState<'landing' | 'workspace'>('landing');
@@ -166,6 +166,14 @@ export default function Home() {
         <Workspace data={activeData} onNewQuery={handleQuery} onReset={handleReset} />
       ) : (
         <main className="min-h-screen bg-white text-slate-900 overflow-hidden relative flex flex-col items-center justify-center">
+          {/* Logo and Brand Name */}
+          <div className="absolute top-8 left-8 flex items-center gap-2 z-20">
+            <div className="bg-blue-600 p-2 rounded-xl text-white shadow-lg">
+              <Eye size={24} />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-slate-900">HealthLens</span>
+          </div>
+
           <div className="container mx-auto py-12 relative z-10">
             <LandingPrompt 
               query={searchQuery} 
@@ -204,8 +212,8 @@ export default function Home() {
                   <Loader2 className="text-blue-600" size={32} />
                 </div>
                 <div className="text-center">
-                  <p className="text-slate-600 font-medium">Analyzing Healthcare Data via Databricks...</p>
-                  <p className="text-slate-400 text-sm italic">This may take a minute while we run the analysis models.</p>
+                  <p className="text-slate-600 font-medium text-lg">Analyzing healthcare signals across India...</p>
+                  <p className="text-slate-400 text-sm italic">HealthLens is reviewing facilities, trust signals, and regional coverage</p>
                 </div>
               </div>
             )}

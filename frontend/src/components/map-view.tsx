@@ -6,14 +6,18 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MockResponse } from '../lib/mock-data';
 
-// Helper to get thematic red color scale for Regional Gaps
+// Helper to get thematic red color scale for Regional Gaps (10-step high contrast)
 const getRedColor = (score: number) => {
-  if (score > 0.9) return '#7f0000'; // Deep Red
-  if (score > 0.8) return '#b30000'; // Dark Red
-  if (score > 0.6) return '#e34a33'; // Medium Red
+  if (score > 0.9) return '#4d0000'; // Extra Deep Red
+  if (score > 0.8) return '#7f0000'; // Deep Red
+  if (score > 0.7) return '#b30000'; // Dark Red
+  if (score > 0.6) return '#d7301f'; // Intense Red
+  if (score > 0.5) return '#ef6548'; // Bright Red-Orange
   if (score > 0.4) return '#fc8d59'; // Orange-Red
-  if (score > 0.2) return '#fdbb84'; // Light Orange
-  return '#fef0d9'; // Pale Yellow/Red
+  if (score > 0.3) return '#fdbb84'; // Light Orange
+  if (score > 0.2) return '#fdd49e'; // Pale Orange
+  if (score > 0.1) return '#fee8c8'; // Cream Orange
+  return '#fff7ec'; // Very Light Yellow/White
 };
 
 // Helper to lighten a hex color for the hover effect

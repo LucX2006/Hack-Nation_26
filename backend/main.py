@@ -8,7 +8,7 @@ import os
 # Laden der .env Datei
 load_dotenv()
 
-app = FastAPI(title="HealthPlan AI Backend")
+app = FastAPI(title="HealthLens Backend")
 ...
 # CORS Setup für das Frontend
 app.add_middleware(
