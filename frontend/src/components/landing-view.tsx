@@ -56,22 +56,20 @@ interface SuggestedPromptsProps {
 
 export const SuggestedPrompts: React.FC<SuggestedPromptsProps> = ({ onSelect }) => {
   const prompts = [
-    "Find the nearest facility in rural Bihar that can perform an emergency appendectomy and typically leverages parttime doctors",
-    "Show the highest-risk medical deserts in India for dialysis, oncology, and emergency trauma",
-    "Find facilities claiming advanced surgery but lacking supporting evidence such as anesthesia capability",
-    "Which regions have weak neonatal and oxygen support coverage?",
-    "What are the top trusted emergency-capable facilities in this region?"
+    "Find the nearest facility in rural Bihar that can perform an emergency appendectomy and typically leverages parttime doctors.",
+    "Which regions in Maharashtra show the highest risk for neonatal care gaps based on recent trust signals?",
+    "Identify facilities in Uttar Pradesh claiming surgical readiness but lacking verified anesthesia staff."
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto px-4 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl mx-auto px-4 mt-8">
       {prompts.map((prompt, index) => (
         <button
           key={index}
           onClick={() => onSelect(prompt)}
-          className="p-4 text-left bg-white border border-slate-100 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 transition-all group shadow-sm"
+          className="p-5 text-left bg-white border border-slate-100 rounded-2xl hover:border-blue-400 hover:bg-blue-50/50 transition-all group shadow-sm flex flex-col h-full"
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 flex-1">
             <Sparkles className="text-blue-500 mt-1 shrink-0" size={18} />
             <span className="text-sm text-slate-600 leading-relaxed group-hover:text-slate-900">
               {prompt}
