@@ -14,4 +14,5 @@ async def analyze_healthcare(request: AnalysisRequest):
         result = await db_service.trigger_job_run(request.query)
         return result
     except Exception as e:
+        print(f"ERROR during analysis: {e}") # Dies zeigt den Fehler im Terminal
         raise HTTPException(status_code=500, detail=str(e))
