@@ -48,10 +48,10 @@ body {
   position: sticky;
   bottom: 0;
   z-index: 20;
-  background: linear-gradient(to top, white 60%, transparent);
-  height: 40px;
+  background: linear-gradient(to top, white 20%, transparent);
+  height: 24px;
   pointer-events: none;
-  margin-top: -40px;
+  margin-top: -24px;
 }
 
 .scroll-fade-mask {

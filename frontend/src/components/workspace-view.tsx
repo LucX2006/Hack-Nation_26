@@ -170,8 +170,8 @@ export const Workspace: React.FC<WorkspaceProps> = ({ data, onNewQuery, onReset 
                 <div className="absolute -bottom-8 left-0 right-0 h-8 bg-gradient-to-t from-transparent to-white/95 pointer-events-none" />
               </div>
 
-              {/* Reduced pt to bring content higher up */}
-              <div className="p-6 pt-4 pb-8 space-y-4 results-container hide-scrollbar">
+              {/* Reduced pt to bring content higher up, increased pb for better scroll clearance */}
+              <div className="p-6 pt-4 pb-20 space-y-4 results-container hide-scrollbar">
                 {data.query_type === 'regional_gap' ? (
                   [...data.regions]
                     .sort((a, b) => b.risk_score - a.risk_score)
