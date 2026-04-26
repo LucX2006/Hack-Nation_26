@@ -1,10 +1,20 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { MockResponse } from '../lib/mock-data';
+
+// Helper to get thematic red color scale for Regional Gaps
+const getRedColor = (score: number) => {
+  if (score > 0.9) return '#7f0000'; // Deep Red
+  if (score > 0.8) return '#b30000'; // Dark Red
+  if (score > 0.6) return '#e34a33'; // Medium Red
+  if (score > 0.4) return '#fc8d59'; // Orange-Red
+  if (score > 0.2) return '#fdbb84'; // Light Orange
+  return '#fef0d9'; // Pale Yellow/Red
+};
 
 // Internal component to handle view changes
 function MapController({ data }: { data: MockResponse }) {
@@ -14,8 +24,9 @@ function MapController({ data }: { data: MockResponse }) {
     if (data.ranking && data.ranking.length > 0) {
       const bounds = L.latLngBounds(data.ranking.map(f => [f.lat, f.lng]));
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-    } else if (data.regions && data.regions.length > 0) {
-      // Logic for regions could be added here if they have coords
+    } else if (data.query_type === 'regional_gap') {
+      // Zoom out slightly to show the whole country for the heatmap
+      map.setView([22.5937, 78.9629], 5);
     }
   }, [data, map]);
 
@@ -56,6 +67,67 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
     [-90, -180],
     [90, 180]
   ];
+
+  const [geoJsonData, setGeoJsonData] = useState<any>(null);
+
+  useEffect(() => {
+    if (data.query_type === 'regional_gap' && !geoJsonData) {
+      fetch('/india-states.geojson')
+        .then(res => res.json())
+        .then(data => setGeoJsonData(data))
+        .catch(err => console.error("Failed to load India GeoJSON", err));
+    }
+  }, [data.query_type, geoJsonData]);
+
+  // Define styling for the GeoJSON layer
+  const getFeatureStyle = (feature: any) => {
+    const stateName = feature.properties.NAME_1;
+    const regionData = data.regions?.find(r => r.name === stateName);
+    
+    if (regionData) {
+      const isHovered = hoveredId === regionData.region_id;
+      return {
+        fillColor: getRedColor(regionData.risk_score),
+        weight: isHovered ? 3 : 1,
+        opacity: 1,
+        color: isHovered ? '#1e40af' : '#ffffff', // Blue border on hover
+        fillOpacity: isHovered ? 0.9 : 0.7
+      };
+    }
+    
+    return {
+      fillColor: '#cbd5e1', // Default gray for states without data
+      weight: 1,
+      opacity: 1,
+      color: '#ffffff',
+      fillOpacity: 0.3
+    };
+  };
+
+  const onEachFeature = (feature: any, layer: L.Layer) => {
+    const stateName = feature.properties.NAME_1;
+    const regionData = data.regions?.find(r => r.name === stateName);
+
+    if (regionData) {
+      layer.on({
+        mouseover: () => onHover(regionData.region_id),
+        mouseout: () => onHover(null),
+      });
+
+      layer.bindPopup(`
+        <div class="text-slate-900 text-xs">
+          <h3 class="font-bold text-sm border-b pb-1 mb-1">${regionData.name}</h3>
+          <p><span class="text-slate-500">Primary Gap:</span> ${regionData.primary_gap}</p>
+          <div class="mt-2 flex items-center justify-between">
+            <span class="font-bold text-red-600">Risk: ${(regionData.risk_score * 100).toFixed(0)}%</span>
+            <span class="text-[9px] px-1 bg-slate-100 rounded text-slate-400">Confidence: ${(regionData.confidence * 100).toFixed(0)}%</span>
+          </div>
+        </div>
+      `);
+    } else {
+      layer.bindPopup(`<div class="text-xs font-bold text-slate-500">${stateName} (No Data)</div>`);
+    }
+  };
 
   return (
     <MapContainer 
@@ -101,40 +173,15 @@ export default function MapView({ data, isDarkMode = false, hoveredId, onHover }
         );
       })}
 
-      {/* Analysis Regions (Risk) */}
-      {data.query_type === 'regional_gap' && data.regions.map((region, idx) => {
-        const coords: Record<string, [number, number]> = {
-          'IN-BR-001': [25.0961, 85.3131],
-          'IN-UP-002': [26.8467, 80.9462],
-        };
-        const pos = coords[region.region_id] || center;
-        const isHovered = hoveredId === region.region_id;
-        
-        return (
-          <CircleMarker 
-            key={idx} 
-            center={pos} 
-            radius={isHovered ? 30 : 25}
-            pathOptions={{ 
-              fillColor: region.risk_score > 0.8 ? '#ef4444' : '#f59e0b',
-              fillOpacity: isHovered ? 0.8 : 0.5,
-              color: 'transparent'
-            }}
-            eventHandlers={{
-              mouseover: () => onHover(region.region_id),
-              mouseout: () => onHover(null)
-            }}
-          >
-            <Popup>
-              <div className="text-slate-900 text-xs">
-                <h3 className="font-bold">{region.name}</h3>
-                <p>Primary Gap: {region.primary_gap}</p>
-                <p className="font-bold text-red-600">Risk: {(region.risk_score * 100).toFixed(0)}%</p>
-              </div>
-            </Popup>
-          </CircleMarker>
-        );
-      })}
+      {/* Analysis Regions (GeoJSON Heatmap) */}
+      {data.query_type === 'regional_gap' && geoJsonData && (
+        <GeoJSON 
+          key={hoveredId || 'base'} // Re-render when hover changes to update styles
+          data={geoJsonData} 
+          style={getFeatureStyle}
+          onEachFeature={onEachFeature}
+        />
+      )}
     </MapContainer>
   );
 }

@@ -140,12 +140,28 @@ export default function Home() {
               isLoading={isLoading} 
             />
             {!isLoading && (
-              <SuggestedPrompts 
-                onSelect={(q) => {
-                  setSearchQuery(q); // First update the bar
-                  handleQuery(q);   // Then trigger the search
-                }} 
-              />
+              <>
+                <SuggestedPrompts 
+                  onSelect={(q) => {
+                    setSearchQuery(q); // First update the bar
+                    handleQuery(q);   // Then trigger the search
+                  }} 
+                />
+                
+                {/* Temporary Test Button for Heatmap */}
+                <div className="mt-12 flex justify-center">
+                  <button 
+                    onClick={() => {
+                      setSearchQuery("Show regional healthcare gaps (Heatmap Test)");
+                      setActiveData(MOCK_RESPONSES.regional_gap);
+                      setView('workspace');
+                    }}
+                    className="px-4 py-2 bg-slate-100 text-slate-500 text-xs font-bold rounded-full hover:bg-red-50 hover:text-red-500 transition-all border border-slate-200 border-dashed"
+                  >
+                    🚀 Test Regional Heatmap (Red Scale)
+                  </button>
+                </div>
+              </>
             )}
             
             {isLoading && (

@@ -103,30 +103,54 @@ export const MOCK_RESPONSES: Record<string, MockResponse> = {
     query: "Show the highest-risk medical deserts in India for dialysis, oncology, and emergency trauma",
     query_type: "regional_gap",
     map_mode: "choropleth",
-    summary: "Several clusters show low coverage for high-acuity specialties.",
+    summary: "Several states show low coverage for high-acuity specialties.",
     regions: [
       {
-        region_id: "IN-BR-001",
-        name: "Bihar Rural Cluster A",
+        region_id: "IN-BR",
+        name: "Bihar",
         risk_score: 0.87,
         coverage_score: 0.22,
         confidence: 0.64,
         primary_gap: "Emergency Trauma",
         supporting_facts: [
-          "No high-trust trauma facilities identified within 50km",
+          "Severe lack of level 1 trauma centers",
           "Sparse emergency coverage signals in public datasets"
         ]
       },
       {
-        region_id: "IN-UP-002",
-        name: "Eastern UP Border Zone",
-        risk_score: 0.82,
-        coverage_score: 0.28,
+        region_id: "IN-JH",
+        name: "Jharkhand",
+        risk_score: 0.75,
+        coverage_score: 0.35,
         confidence: 0.71,
         primary_gap: "Dialysis",
         supporting_facts: [
           "High patient load for existing small clinics",
-          "Travel distance to nearest tertiary care > 100km"
+          "Growing population outpaces infrastructure"
+        ]
+      },
+      {
+        region_id: "IN-MH",
+        name: "Maharashtra",
+        risk_score: 0.32,
+        coverage_score: 0.78,
+        confidence: 0.85,
+        primary_gap: "None",
+        supporting_facts: [
+          "Strong private healthcare presence",
+          "Well-connected transport links"
+        ]
+      },
+      {
+        region_id: "IN-UP",
+        name: "Uttar Pradesh",
+        risk_score: 0.95,
+        coverage_score: 0.12,
+        confidence: 0.58,
+        primary_gap: "Oncology",
+        supporting_facts: [
+          "Critical shortage of specialized chemotherapy units",
+          "Over 200km to nearest cancer center for many residents"
         ]
       }
     ],
