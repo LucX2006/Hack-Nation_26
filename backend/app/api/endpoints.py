@@ -1,0 +1,17 @@
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from app.services.databricks_service import DatabricksService
+
+router = APIRouter()
+db_service = DatabricksService()
+
+class AnalysisRequest(BaseModel):
+    query: str
+
+@router.post("/analyze")
+async def analyze_healthcare(request: AnalysisRequest):
+    try:
+        result = await db_service.trigger_job_run(request.query)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
