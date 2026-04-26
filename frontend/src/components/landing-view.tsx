@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Search, Sparkles } from 'lucide-react';
 
 interface LandingPromptProps {
+  query: string;
+  setQuery: (query: string) => void;
   onSubmit: (query: string) => void;
   isLoading?: boolean;
 }
 
-export const LandingPrompt: React.FC<LandingPromptProps> = ({ onSubmit, isLoading = false }) => {
-  const [query, setQuery] = useState('');
-
+export const LandingPrompt: React.FC<LandingPromptProps> = ({ query, setQuery, onSubmit, isLoading = false }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim() && !isLoading) {

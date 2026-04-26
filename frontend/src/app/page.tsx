@@ -10,8 +10,12 @@ export default function Home() {
   const [view, setView] = useState<'landing' | 'workspace'>('landing');
   const [activeData, setActiveData] = useState<MockResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleQuery = async (query: string) => {
+    // Ensure the input field shows the current query (useful for suggestions)
+    setSearchQuery(query);
+    
     // Capture current query as context if we are already in workspace
     const previousQuery = activeData?.query || null;
     setIsLoading(true);
@@ -106,6 +110,7 @@ export default function Home() {
   const handleReset = () => {
     setView('landing');
     setActiveData(null);
+    setSearchQuery(''); // Clear search box on reset
   };
 
   return (
@@ -127,8 +132,20 @@ export default function Home() {
       ) : (
         <main className="min-h-screen bg-white text-slate-900 overflow-hidden relative flex flex-col items-center justify-center">
           <div className="container mx-auto py-12 relative z-10">
-            <LandingPrompt onSubmit={handleQuery} isLoading={isLoading} />
-            {!isLoading && <SuggestedPrompts onSelect={handleQuery} />}
+            <LandingPrompt 
+              query={searchQuery} 
+              setQuery={setSearchQuery} 
+              onSubmit={handleQuery} 
+              isLoading={isLoading} 
+            />
+            {!isLoading && (
+              <SuggestedPrompts 
+                onSelect={(q) => {
+                  setSearchQuery(q); // First update the bar
+                  handleQuery(q);   // Then trigger the search
+                }} 
+              />
+            )}
             
             {isLoading && (
               <div className="mt-12 flex flex-col items-center gap-4 animate-in fade-in duration-700">
